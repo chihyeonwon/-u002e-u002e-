@@ -1,3 +1,77 @@
+# 🔍 `-u002e-u002e-` 분석 보고서
+
+## 📌 개요
+`-u002e-u002e-`는 **유니코드 이스케이프 시퀀스**로, 보안 연구 및 웹 보안 관점에서 중요한 의미를 가질 수 있습니다.  
+특히, **디렉토리 트래버설 공격(Directory Traversal)** 또는 **유니코드 우회 공격**에 사용될 가능성이 있습니다.  
+
+---
+
+## 📖 `-u002e-u002e-`란?
+### 🔹 유니코드 해석
+`-u002e-u002e-`에서 `\u002e`는 **유니코드 표기법으로 마침표(.)를 의미**합니다.  
+이를 해석하면 다음과 같이 변환됩니다:
+
+
+즉, 문자열 내부에 **`..`(점 두 개, 상위 디렉토리를 의미하는 표기법)**이 포함된 것을 확인할 수 있습니다.  
+이 패턴은 보통 **디렉토리 트래버설 공격**과 관련이 있을 수 있습니다.
+
+---
+
+## 🚨 보안적 위험 요소
+### 🔥 1. **디렉토리 트래버설(Directory Traversal) 공격**
+`..` 표기는 파일 경로에서 **상위 디렉토리 이동을 의미**합니다.  
+해커가 `../` 또는 유니코드로 인코딩된 `\u002e\u002e/` 등을 활용하면, 보호되지 않은 서버에서 중요한 시스템 파일을 읽어낼 수 있습니다.
+
+**예제 공격 코드:**
+```http
+GET /../../../etc/passwd HTTP/1.1
+Host: vulnerable.com
+GET /%u002e%u002e/%u002e%u002e/%u002e%u002e/etc/passwd HTTP/1.1
+Host: vulnerable.com
+```
+ 2. 보안 우회(Unicode Bypass)
+웹 애플리케이션에서 단순히 ../ 패턴만 필터링할 경우, \u002e\u002e/ 같은 유니코드 변형을 사용하면 우회가 가능합니다.
+
+python
+복사
+편집
+# 필터링 우회 예제
+path = user_input.replace("../", "")  # 단순 필터링
+# 하지만 유니코드 변형된 `\u002e\u002e/`는 그대로 통과할 가능성이 있음
+따라서 보안 정책을 설계할 때는 유니코드 기반의 우회 공격까지 고려해야 합니다.
+
+✅ 대응 방안
+🔹 1. 입력값 검증 강화
+../, ..뿐만 아니라 \u002e\u002e와 같은 유니코드 변형 패턴도 필터링해야 함.
+정규식을 사용하여 허용된 경로 이외의 접근을 차단.
+python
+복사
+편집
+import re
+
+def secure_path(user_input):
+    # `..`, 유니코드 표기된 `\u002e\u002e` 등 차단
+    if re.search(r"(\.\.|%u002e%u002e)", user_input, re.IGNORECASE):
+        raise ValueError("Invalid path")
+    return user_input
+🔹 2. WAF(Web Application Firewall) 적용
+웹 애플리케이션 방화벽(WAF)을 활용하여 유니코드 기반 우회 공격을 차단.
+OWASP ModSecurity Core Rule Set 사용 추천.
+🔹 3. 서버 권한 관리 강화
+웹 서버에서 루트 디렉토리 접근을 제한하고, 중요한 파일이 외부에서 노출되지 않도록 설정.
+chroot 또는 컨테이너 환경을 사용하여 보안성을 높일 것.
+🎯 결론
+-u002e-u002e- 패턴은 디렉토리 트래버설 공격에서 사용될 가능성이 높음.
+단순한 ../ 필터링만으로는 우회될 수 있으며, 유니코드 기반의 차단 로직이 필요.
+WAF 적용, 권한 관리 강화 등의 보안 조치 필수.
+📚 참고 자료
+OWASP Directory Traversal
+Unicode Security Issues
+ModSecurity Core Rule Set
+
+✍ 작성자: IGLOO Corporation, Won Chi Hyun
+📅 작성일: 2025-03-14
+
 자이브 소프트웨어(Jive Software)의 실시간 협업 서버
 - XMPP(Extensible Messaging and Presence Protocol) 프로토콜을 기반으로 하는 오픈 소스 실시간 협업 서버
 
